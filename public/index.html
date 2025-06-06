@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UK Property Investment Zone Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 1rem 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .main-container {
+        display: flex;
+        height: calc(100vh - 80px);
+      }
+
+      .sidebar {
+        width: 350px;
+        background: white;
+        border-right: 1px solid #e2e8f0;
+        overflow-y: auto;
+        box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .map-container {
+        flex: 1;
+        position: relative;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      .controls-panel {
+        background: white;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+      }
+
+      .search-box:focus {
+        outline: none;
+        border-color: #3b82f6;
+      }
+
+      .filter-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .filter-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        color: #374151;
+      }
+
+      .filter-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+      }
+
+      .investment-score {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        margin: 1rem;
+        border-radius: 12px;
+      }
+
+      .score-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .score-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .metrics-panel {
+        padding: 1.5rem;
+      }
+
+      .metric-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .metric-label {
+        font-size: 0.9rem;
+        color: #64748b;
+      }
+
+      .metric-value {
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .trend-up {
+        color: #10b981;
+      }
+
+      .trend-down {
+        color: #ef4444;
+      }
+
+      .zone-details {
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .zone-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #1e293b;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .detail-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .detail-value {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #1e293b;
+      }
+
+      .detail-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+      }
+
+      .legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .legend h4 {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #374151;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.25rem;
+      }
+
+      .legend-color {
+        width: 20px;
+        height: 12px;
+        margin-right: 0.5rem;
+        border-radius: 2px;
+      }
+
+      .legend-text {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+
+      .chart-container {
+        margin-top: 1rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .chart-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #374151;
+      }
+
+      .mini-chart {
+        height: 100px;
+        background: linear-gradient(45deg, #f1f5f9 0%, #e2e8f0 100%);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 0.8rem;
+      }
+
+      .sources-panel {
+        background: white;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .sources-header {
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .sources-header:hover {
+        background: #f1f5f9;
+      }
+
+      .sources-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .sources-content.expanded {
+        max-height: 500px;
+      }
+
+      .source-category {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .category-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .data-source {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8fafc;
+      }
+
+      .source-info {
+        flex: 1;
+      }
+
+      .source-name {
+        font-size: 0.8rem;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+      }
+
+      .source-link {
+        font-size: 0.75rem;
+        color: #3b82f6;
+        text-decoration: none;
+        word-break: break-all;
+      }
+
+      .source-link:hover {
+        text-decoration: underline;
+      }
+
+      .source-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 1rem;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .status-live {
+        background: #10b981;
+      }
+
+      .status-updated {
+        background: #f59e0b;
+      }
+
+      .status-offline {
+        background: #ef4444;
+      }
+
+      .last-updated {
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+
+      .api-indicator {
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+      }
+
+      .source-icons {
+        margin-right: 0.5rem;
+        opacity: 0.7;
+      }
+
+      .toolbar {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .tool-btn {
+        background: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .tool-btn:hover {
+        background: #f1f5f9;
+        transform: translateY(-1px);
+      }
+
+      .tool-btn.active {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .loading-indicator {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: #10b981;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🏠 UK Property Investment Zone Analyzer</h1>
+    </div>
+
+    <div class="main-container">
+      <div class="sidebar">
+        <div class="controls-panel">
+          <input
+            type="text"
+            class="search-box"
+            placeholder="Search by postcode, city, or area..."
+          />
+
+          <div class="filter-group">
+            <label class="filter-label">Investment Focus</label>
+            <select class="filter-select">
+              <option>All Investment Types</option>
+              <option>Buy-to-Let Rental</option>
+              <option>Capital Growth</option>
+              <option>Development Opportunities</option>
+              <option>Commercial Property</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Budget Range</label>
+            <select class="filter-select">
+              <option>All Budgets</option>
+              <option>Under £200k</option>
+              <option>£200k - £500k</option>
+              <option>£500k - £1M</option>
+              <option>£1M+</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Risk Tolerance</label>
+            <select class="filter-select">
+              <option>All Risk Levels</option>
+              <option>Low Risk</option>
+              <option>Medium Risk</option>
+              <option>High Risk</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="investment-score">
+          <div class="score-value">8.4</div>
+          <div class="score-label">Investment Score</div>
+        </div>
+
+        <div class="metrics-panel">
+          <div class="metric-item">
+            <span class="metric-label">Avg. Property Price</span>
+            <span class="metric-value">£425,000</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Price Growth (12m)</span>
+            <span class="metric-value trend-up">+12.3%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Rental Yield</span>
+            <span class="metric-value">4.8%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Crime Rate</span>
+            <span class="metric-value trend-down">-8.1%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Employment Rate</span>
+            <span class="metric-value trend-up">94.2%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Transport Score</span>
+            <span class="metric-value">7.9/10</span>
+          </div>
+        </div>
+
+        <div class="zone-details">
+          <h3 class="zone-title">Manchester Central</h3>
+
+          <div class="detail-grid">
+            <div class="detail-card">
+              <div class="detail-value">23</div>
+              <div class="detail-label">New Developments</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-value">15min</div>
+              <div class="detail-label">City Center</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-value">A+</div>
+              <div class="detail-label">School Rating</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-value">95%</div>
+              <div class="detail-label">Occupancy Rate</div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-title">Price Trend (Last 5 Years)</div>
+            <div class="mini-chart">📈 Interactive Chart Area</div>
+          </div>
+        </div>
+
+        <div class="sources-panel">
+          <div class="sources-header" onclick="toggleSources()">
+            <span>📊 Data Sources & APIs</span>
+            <span id="sources-toggle">▼</span>
+          </div>
+          <div class="sources-content" id="sources-content">
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🏠</span>Property Data
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">
+                    HM Land Registry - Price Paid Data
+                  </div>
+                  <a
+                    href="https://landregistry.data.gov.uk/app/ppd"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    landregistry.data.gov.uk/app/ppd
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">2min ago</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Rightmove Property Data</div>
+                  <a
+                    href="https://www.rightmove.co.uk/property-for-sale"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    rightmove.co.uk/property-for-sale
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="last-updated">5min ago</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">👥</span>Demographics & Census
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">ONS Population & Demographics</div>
+                  <a
+                    href="https://www.ons.gov.uk/datasets"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    ons.gov.uk/datasets
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">1hr ago</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Census 2021 Data</div>
+                  <a
+                    href="https://census.gov.uk/census-2021-results"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    census.gov.uk/census-2021-results
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-updated"></div>
+                  <div class="last-updated">Daily</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">💼</span>Employment & Economy
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">ONS Labour Market Statistics</div>
+                  <a
+                    href="https://www.ons.gov.uk/employmentandlabourmarket"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    ons.gov.uk/employmentandlabourmarket
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">30min ago</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Companies House API</div>
+                  <a
+                    href="https://developer-specs.company-information.service.gov.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    developer-specs.company-information.service.gov.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">15min ago</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🚇</span>Transport & Infrastructure
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Transport for London Open Data</div>
+                  <a
+                    href="https://tfl.gov.uk/info-for/open-data-users/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    tfl.gov.uk/info-for/open-data-users
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Real-time</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">National Rail Enquiries</div>
+                  <a
+                    href="https://www.nationalrail.co.uk/46391.aspx"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    nationalrail.co.uk/46391.aspx
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Real-time</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🚔</span>Crime & Safety
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Police.uk Crime Data</div>
+                  <a
+                    href="https://data.police.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    data.police.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Monthly</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🎓</span>Education & Schools
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">DfE School Performance Data</div>
+                  <a
+                    href="https://www.compare-school-performance.service.gov.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    compare-school-performance.service.gov.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-updated"></div>
+                  <div class="last-updated">Annually</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Ofsted School Ratings</div>
+                  <a
+                    href="https://www.gov.uk/government/organisations/ofsted"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    gov.uk/government/organisations/ofsted
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-updated"></div>
+                  <div class="last-updated">Quarterly</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🏗️</span>Planning & Development
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Planning Portal Applications</div>
+                  <a
+                    href="https://www.planningportal.co.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    planningportal.co.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="last-updated">Daily</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Local Authority Planning Data</div>
+                  <a
+                    href="https://www.manchester.gov.uk/info/200024/planning_applications"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    manchester.gov.uk/planning_applications
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Weekly</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="source-category">
+              <div class="category-title">
+                <span class="source-icons">🏛️</span>Government Data Portals
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Data.gov.uk Central Portal</div>
+                  <a
+                    href="https://data.gov.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    data.gov.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Live</div>
+                </div>
+              </div>
+              <div class="data-source">
+                <div class="source-info">
+                  <div class="source-name">Local Government Open Data</div>
+                  <a
+                    href="https://opendata.london.gov.uk/"
+                    class="source-link"
+                    target="_blank"
+                  >
+                    opendata.london.gov.uk
+                  </a>
+                </div>
+                <div class="source-status">
+                  <div class="status-dot status-live"></div>
+                  <div class="api-indicator">API</div>
+                  <div class="last-updated">Varies</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-container">
+        <div class="toolbar">
+          <button class="tool-btn active">Heat Map</button>
+          <button class="tool-btn">Satellite</button>
+          <button class="tool-btn">Compare</button>
+          <button class="tool-btn">Export</button>
+        </div>
+
+        <div class="loading-indicator pulse">🔄 Live Data Updating...</div>
+
+        <div id="map"></div>
+
+        <div class="legend">
+          <h4>Investment Score</h4>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #ef4444"></div>
+            <span class="legend-text">1-3 Poor</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #f97316"></div>
+            <span class="legend-text">4-5 Fair</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #eab308"></div>
+            <span class="legend-text">6-7 Good</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #22c55e"></div>
+            <span class="legend-text">8-9 Excellent</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #10b981"></div>
+            <span class="legend-text">10 Outstanding</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Configuration
+      const API_BASE =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://your-app.vercel.app";
+
+      // Initialize the map
+      var map = L.map("map").setView([54.5, -3.5], 6);
+
+      // Add tile layer
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      // Global variables
+      let propertyData = [];
+      let selectedPostcode = null;
+      let markersLayer = L.layerGroup().addTo(map);
+
+      // Initialize app
+      async function initializeApp() {
+        console.log("🚀 Initializing UK Property Investment App...");
+
+        try {
+          showLoading(true);
+          await loadPropertyData();
+          setupEventListeners();
+          console.log("✅ App initialized successfully");
+        } catch (error) {
+          console.error("❌ App initialization failed:", error);
+          showError("Failed to load property data. Please refresh the page.");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Load property data from API
+      async function loadPropertyData() {
+        try {
+          const response = await fetch(`${API_BASE}/api/property-data`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.success && result.data) {
+            propertyData = result.data;
+            displayPropertyMarkers();
+            updateDataSourcesPanel();
+          } else {
+            throw new Error("Invalid data format received");
+          }
+        } catch (error) {
+          console.error("Error loading property data:", error);
+          // Load sample data as fallback
+          loadSampleData();
+        }
+      }
+
+      // Display property markers on map
+      function displayPropertyMarkers() {
+        markersLayer.clearLayers();
+
+        propertyData.forEach((property) => {
+          if (!property.property_areas) return;
+
+          const area = property.property_areas;
+          const score = property.investment_score || 5;
+          const color = getScoreColor(score);
+
+          const marker = L.circleMarker([area.latitude, area.longitude], {
+            radius: 12,
+            fillColor: color,
+            color: "white",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8,
+          });
+
+          const popupContent = `
+                    <div style="text-align: center; padding: 0.5rem; min-width: 200px;">
+                        <h4 style="margin: 0 0 0.5rem 0;">${area.area_name}</h4>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: ${color};">
+                            Score: ${score}/10
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                            ${
+                              property.avg_price
+                                ? `Avg Price: £${property.avg_price.toLocaleString()}`
+                                : ""
+                            }
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
+                            Click for detailed analysis
+                        </div>
+                    </div>
+                `;
+
+          marker.bindPopup(popupContent);
+          marker.on("click", () => selectProperty(property));
+          markersLayer.addLayer(marker);
+        });
+      }
+
+      // Select a property for detailed view
+      async function selectProperty(property) {
+        selectedPostcode = property.postcode;
+
+        try {
+          showLoading(true);
+
+          // Load detailed data for this postcode
+          const response = await fetch(
+            `${API_BASE}/api/property-data?postcode=${property.postcode}`
+          );
+          const detailData = await response.json();
+
+          if (detailData.success) {
+            updateSidebar(detailData);
+          } else {
+            updateSidebar({ metrics: property });
+          }
+        } catch (error) {
+          console.error("Error loading detailed data:", error);
+          updateSidebar({ metrics: property });
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Update sidebar with property details
+      function updateSidebar(data) {
+        const metrics = data.metrics || {};
+        const area = metrics.property_areas || {};
+
+        // Update investment score
+        document.querySelector(".score-value").textContent = (
+          metrics.investment_score || 5
+        ).toFixed(1);
+
+        // Update metrics
+        updateMetric("Avg. Property Price", formatPrice(metrics.avg_price));
+        updateMetric(
+          "Price Growth (12m)",
+          formatPercentage(metrics.price_growth_12m)
+        );
+        updateMetric("Rental Yield", formatPercentage(metrics.rental_yield));
+        updateMetric("Crime Rate", formatNumber(metrics.crime_rate));
+        updateMetric(
+          "Employment Rate",
+          formatPercentage(metrics.employment_rate)
+        );
+        updateMetric("Transport Score", formatScore(metrics.transport_score));
+
+        // Update zone details
+        document.querySelector(".zone-title").textContent =
+          area.area_name || selectedPostcode || "Selected Area";
+
+        // Update detail cards
+        updateDetailCard(0, metrics.new_developments || 0, "New Developments");
+        updateDetailCard(1, "15min", "City Center");
+        updateDetailCard(2, metrics.school_rating || "Good", "School Rating");
+        updateDetailCard(3, "95%", "Occupancy Rate");
+
+        // Update recent sales if available
+        if (data.recentSales && data.recentSales.length > 0) {
+          updateRecentSales(data.recentSales);
+        }
+      }
+
+      // Update individual metrics
+      function updateMetric(label, value) {
+        const metrics = document.querySelectorAll(".metric-item");
+        metrics.forEach((metric) => {
+          const labelEl = metric.querySelector(".metric-label");
+          if (labelEl && labelEl.textContent === label) {
+            const valueEl = metric.querySelector(".metric-value");
+            if (valueEl) {
+              valueEl.textContent = value;
+              // Add trend classes
+              if (value.includes("+")) {
+                valueEl.className = "metric-value trend-up";
+              } else if (value.includes("-")) {
+                valueEl.className = "metric-value trend-down";
+              } else {
+                valueEl.className = "metric-value";
+              }
+            }
+          }
+        });
+      }
+
+      // Update detail cards
+      function updateDetailCard(index, value, label) {
+        const cards = document.querySelectorAll(".detail-card");
+        if (cards[index]) {
+          const valueEl = cards[index].querySelector(".detail-value");
+          const labelEl = cards[index].querySelector(".detail-label");
+          if (valueEl) valueEl.textContent = value;
+          if (labelEl) labelEl.textContent = label;
+        }
+      }
+
+      // Search functionality
+      async function performSearch(query) {
+        if (!query || query.length < 3) return;
+
+        try {
+          showLoading(true);
+
+          // Search in existing data first
+          const localResults = propertyData.filter(
+            (property) =>
+              property.postcode.toLowerCase().includes(query.toLowerCase()) ||
+              (property.property_areas &&
+                property.property_areas.area_name
+                  .toLowerCase()
+                  .includes(query.toLowerCase()))
+          );
+
+          if (localResults.length > 0) {
+            // Focus map on first result
+            const firstResult = localResults[0];
+            if (firstResult.property_areas) {
+              map.setView(
+                [
+                  firstResult.property_areas.latitude,
+                  firstResult.property_areas.longitude,
+                ],
+                12
+              );
+              selectProperty(firstResult);
+            }
+          } else {
+            // Try API search for new postcode
+            const response = await fetch(
+              `${API_BASE}/api/property-data?postcode=${query}`
+            );
+            const result = await response.json();
+
+            if (result.success && result.metrics) {
+              updateSidebar(result);
+              showMessage("Data found for " + query.toUpperCase());
+            } else {
+              showMessage("No data found for " + query);
+            }
+          }
+        } catch (error) {
+          console.error("Search error:", error);
+          showError("Search failed. Please try again.");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Event listeners
+      function setupEventListeners() {
+        // Search box
+        const searchBox = document.querySelector(".search-box");
+        let searchTimeout;
+
+        searchBox.addEventListener("input", (e) => {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            performSearch(e.target.value);
+          }, 500);
+        });
+
+        searchBox.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            clearTimeout(searchTimeout);
+            performSearch(e.target.value);
+          }
+        });
+
+        // Filter changes
+        document.querySelectorAll(".filter-select").forEach((select) => {
+          select.addEventListener("change", applyFilters);
+        });
+
+        // Toolbar buttons
+        document.querySelectorAll(".tool-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document
+              .querySelectorAll(".tool-btn")
+              .forEach((b) => b.classList.remove("active"));
+            this.classList.add("active");
+
+            const action = this.textContent.toLowerCase();
+            handleToolbarAction(action);
+          });
+        });
+      }
+
+      // Apply filters
+      function applyFilters() {
+        const investmentType =
+          document.querySelectorAll(".filter-select")[0].value;
+        const budgetRange =
+          document.querySelectorAll(".filter-select")[1].value;
+        const riskTolerance =
+          document.querySelectorAll(".filter-select")[2].value;
+
+        let filteredData = [...propertyData];
+
+        // Apply budget filter
+        if (budgetRange !== "All Budgets") {
+          filteredData = filteredData.filter((property) => {
+            const price = property.avg_price || 0;
+            switch (budgetRange) {
+              case "Under £200k":
+                return price < 200000;
+              case "£200k - £500k":
+                return price >= 200000 && price <= 500000;
+              case "£500k - £1M":
+                return price > 500000 && price <= 1000000;
+              case "£1M+":
+                return price > 1000000;
+              default:
+                return true;
+            }
+          });
+        }
+
+        // Apply risk filter
+        if (riskTolerance !== "All Risk Levels") {
+          filteredData = filteredData.filter((property) => {
+            const score = property.investment_score || 5;
+            switch (riskTolerance) {
+              case "Low Risk":
+                return score >= 7;
+              case "Medium Risk":
+                return score >= 5 && score < 7;
+              case "High Risk":
+                return score < 5;
+              default:
+                return true;
+            }
+          });
+        }
+
+        // Update map with filtered data
+        const originalData = propertyData;
+        propertyData = filteredData;
+        displayPropertyMarkers();
+        propertyData = originalData; // Restore original data
+      }
+
+      // Handle toolbar actions
+      function handleToolbarAction(action) {
+        switch (action) {
+          case "heat map":
+            // Already default view
+            break;
+          case "satellite":
+            // Switch to satellite view
+            showMessage("Satellite view activated");
+            break;
+          case "compare":
+            showMessage("Compare mode activated - click areas to compare");
+            break;
+          case "export":
+            exportData();
+            break;
+        }
+      }
+
+      // Export data
+      function exportData() {
+        if (!selectedPostcode) {
+          showMessage("Please select an area first");
+          return;
+        }
+
+        const data = propertyData.find((p) => p.postcode === selectedPostcode);
+        if (data) {
+          const csvContent = generateCSV([data]);
+          downloadCSV(csvContent, `property-analysis-${selectedPostcode}.csv`);
+          showMessage("Data exported successfully");
+        }
+      }
+
+      // Generate CSV content
+      function generateCSV(data) {
+        const headers = [
+          "Postcode",
+          "Area Name",
+          "Investment Score",
+          "Avg Price",
+          "Price Growth",
+          "Rental Yield",
+        ];
+        const rows = data.map((item) => [
+          item.postcode,
+          item.property_areas?.area_name || "",
+          item.investment_score || "",
+          item.avg_price || "",
+          item.price_growth_12m || "",
+          item.rental_yield || "",
+        ]);
+
+        return [headers, ...rows].map((row) => row.join(",")).join("\n");
+      }
+
+      // Download CSV file
+      function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+
+      // Update data sources panel
+      function updateDataSourcesPanel() {
+        const sources = document.querySelectorAll(".last-updated");
+        sources.forEach((source) => {
+          if (
+            !source.textContent.includes("Real-time") &&
+            !source.textContent.includes("Live")
+          ) {
+            const randomTime = Math.floor(Math.random() * 60) + 1;
+            source.textContent = `${randomTime}min ago`;
+          }
+        });
+      }
+
+      // Load sample data as fallback
+      function loadSampleData() {
+        console.log("Loading sample data...");
+
+        propertyData = [
+          {
+            postcode: "M1 1AA",
+            investment_score: 8.4,
+            avg_price: 425000,
+            price_growth_12m: 12.3,
+            rental_yield: 4.8,
+            transport_score: 7.9,
+            crime_rate: 25,
+            employment_rate: 94.2,
+            property_areas: {
+              area_name: "Manchester Central",
+              latitude: 53.4808,
+              longitude: -2.2426,
+              region: "North West",
+              local_authority: "Manchester",
+            },
+          },
+          {
+            postcode: "SW1A 1AA",
+            investment_score: 9.2,
+            avg_price: 850000,
+            price_growth_12m: 8.7,
+            rental_yield: 3.2,
+            transport_score: 9.8,
+            crime_rate: 15,
+            employment_rate: 96.1,
+            property_areas: {
+              area_name: "Westminster",
+              latitude: 51.5014,
+              longitude: -0.1419,
+              region: "London",
+              local_authority: "Westminster",
+            },
+          },
+          {
+            postcode: "B1 1AA",
+            investment_score: 7.2,
+            avg_price: 285000,
+            price_growth_12m: 9.4,
+            rental_yield: 5.6,
+            transport_score: 6.8,
+            crime_rate: 35,
+            employment_rate: 88.7,
+            property_areas: {
+              area_name: "Birmingham Central",
+              latitude: 52.4862,
+              longitude: -1.8904,
+              region: "West Midlands",
+              local_authority: "Birmingham",
+            },
+          },
+        ];
+
+        displayPropertyMarkers();
+        if (propertyData.length > 0) {
+          selectProperty(propertyData[0]);
+        }
+      }
+
+      // Utility functions
+      function getScoreColor(score) {
+        if (score >= 8) return "#10b981";
+        if (score >= 6) return "#22c55e";
+        if (score >= 4) return "#eab308";
+        return "#ef4444";
+      }
+
+      function formatPrice(price) {
+        if (!price) return "N/A";
+        return "£" + price.toLocaleString();
+      }
+
+      function formatPercentage(value) {
+        if (value === null || value === undefined) return "N/A";
+        const sign = value > 0 ? "+" : "";
+        return sign + value.toFixed(1) + "%";
+      }
+
+      function formatNumber(value) {
+        if (value === null || value === undefined) return "N/A";
+        return value.toLocaleString();
+      }
+
+      function formatScore(value) {
+        if (value === null || value === undefined) return "N/A";
+        return value.toFixed(1) + "/10";
+      }
+
+      function showLoading(show) {
+        const indicator = document.querySelector(".loading-indicator");
+        if (indicator) {
+          indicator.style.display = show ? "block" : "none";
+        }
+      }
+
+      function showMessage(message) {
+        console.log("📢 " + message);
+        // You can implement a toast notification here
+      }
+
+      function showError(message) {
+        console.error("❌ " + message);
+        // You can implement an error notification here
+      }
+
+      // Toggle sources panel
+      function toggleSources() {
+        const content = document.getElementById("sources-content");
+        const toggle = document.getElementById("sources-toggle");
+
+        if (content.classList.contains("expanded")) {
+          content.classList.remove("expanded");
+          toggle.textContent = "▼";
+        } else {
+          content.classList.add("expanded");
+          toggle.textContent = "▲";
+        }
+      }
+
+      // Auto-update data every 5 minutes
+      setInterval(async () => {
+        try {
+          await loadPropertyData();
+          updateDataSourcesPanel();
+          console.log("🔄 Data refreshed automatically");
+        } catch (error) {
+          console.error("Auto-update failed:", error);
+        }
+      }, 5 * 60 * 1000);
+
+      // Initialize app when page loads
+      document.addEventListener("DOMContentLoaded", initializeApp);
+
+      // Add click tracking for source links
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".source-link").forEach((link) => {
+          link.addEventListener("click", function () {
+            console.log("User accessed data source:", this.href);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

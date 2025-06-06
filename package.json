@@ -1,0 +1,40 @@
+{
+  "name": "uk-property-investment-app",
+  "version": "1.0.0",
+  "description": "Free UK Property Investment Analysis App",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "echo 'Use vercel dev for local development'",
+    "update-data": "node scripts/update-data.js",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "property",
+    "investment",
+    "uk",
+    "real-estate",
+    "analysis"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mariusnicorescu85/uk-property-investment"
+  },
+  "homepage": "https://your-app.vercel.app",
+  "bugs": {
+    "url": "https://github.com/mariusnicorescu85/uk-property-investment/issues"
+  }
+}

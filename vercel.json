@@ -1,0 +1,39 @@
+{
+  "functions": {
+    "api/property-data.js": {
+      "maxDuration": 30
+    },
+    "api/update-data.js": {
+      "maxDuration": 300
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/property-data",
+      "destination": "/api/property-data.js"
+    },
+    {
+      "source": "/api/update-data",
+      "destination": "/api/update-data.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
+}
