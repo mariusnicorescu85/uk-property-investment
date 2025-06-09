@@ -425,6 +425,65 @@
           opacity: 0.5;
         }
       }
+
+      /* Add to existing styles */
+      .ai-panel {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin: 1rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .prediction-chart {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .risk-meter {
+        height: 20px;
+        background: linear-gradient(
+          90deg,
+          #10b981 0%,
+          #f59e0b 50%,
+          #ef4444 100%
+        );
+        border-radius: 10px;
+        position: relative;
+        margin: 0.5rem 0;
+      }
+
+      .risk-indicator {
+        position: absolute;
+        top: -5px;
+        width: 30px;
+        height: 30px;
+        background: white;
+        border-radius: 50%;
+        border: 3px solid #667eea;
+      }
+
+      .recommendation-box {
+        background: rgba(255, 255, 255, 0.9);
+        color: #1e293b;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+
+      .ai-btn {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -526,6 +585,44 @@
               <div class="detail-value">95%</div>
               <div class="detail-label">Occupancy Rate</div>
             </div>
+          </div>
+
+          <!-- Add this after the zone-details div -->
+          <div class="ai-panel" id="aiPanel">
+            <h3>🤖 AI Predictions</h3>
+
+            <div id="predictionResults" style="display: none">
+              <div class="prediction-chart">
+                <h4>5-Year Price Forecast</h4>
+                <canvas id="simpleChart" width="300" height="100"></canvas>
+              </div>
+
+              <div class="risk-meter">
+                <div class="risk-indicator" id="riskIndicator"></div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  font-size: 0.8rem;
+                "
+              >
+                <span>Low Risk</span>
+                <span>High Risk</span>
+              </div>
+
+              <div class="recommendation-box">
+                <strong id="recommendationText">HOLD</strong>
+                <div id="reasoningText">Analyzing market conditions...</div>
+                <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem">
+                  Confidence: <span id="confidenceText">75%</span>
+                </div>
+              </div>
+            </div>
+
+            <button class="ai-btn" onclick="generatePredictions()">
+              🚀 Generate AI Predictions
+            </button>
           </div>
 
           <div class="chart-container">
@@ -1459,6 +1556,106 @@
           });
         });
       });
+
+      // Add to existing JavaScript
+      async function generatePredictions() {
+        if (!selectedPostcode) {
+          alert("Please select a property area first");
+          return;
+        }
+
+        const btn = document.querySelector(".ai-btn");
+        btn.disabled = true;
+        btn.textContent = "🤖 Analyzing...";
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/ai-predictions?postcode=${selectedPostcode}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            displayPredictions(data);
+            document.getElementById("predictionResults").style.display =
+              "block";
+          } else {
+            throw new Error(data.error || "Prediction failed");
+          }
+        } catch (error) {
+          console.error("Prediction error:", error);
+          alert("Failed to generate predictions. Please try again.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "🚀 Generate AI Predictions";
+        }
+      }
+
+      function displayPredictions(data) {
+        // Update risk meter
+        const riskIndicator = document.getElementById("riskIndicator");
+        const riskPosition = ((data.riskScore - 1) / 9) * 100;
+        riskIndicator.style.left = `calc(${riskPosition}% - 15px)`;
+
+        // Update recommendation
+        document.getElementById("recommendationText").textContent =
+          data.recommendation.recommendation;
+        document.getElementById("reasoningText").textContent =
+          data.recommendation.reasoning.join(", ");
+        document.getElementById("confidenceText").textContent =
+          data.recommendation.confidence + "%";
+
+        // Draw simple chart
+        drawSimpleChart(data.predictions);
+      }
+
+      function drawSimpleChart(predictions) {
+        const canvas = document.getElementById("simpleChart");
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 3;
+
+        const maxGrowth = Math.max(
+          ...predictions.map((p) => p.priceChangePercent)
+        );
+        const minGrowth = Math.min(
+          ...predictions.map((p) => p.priceChangePercent)
+        );
+        const range = maxGrowth - minGrowth || 1;
+
+        ctx.beginPath();
+        predictions.forEach((pred, i) => {
+          const x = (i / (predictions.length - 1)) * (canvas.width - 40) + 20;
+          const y =
+            canvas.height -
+            20 -
+            ((pred.priceChangePercent - minGrowth) / range) *
+              (canvas.height - 40);
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+
+          // Draw points
+          ctx.fillStyle = "#10b981";
+          ctx.fillRect(x - 2, y - 2, 4, 4);
+        });
+        ctx.stroke();
+
+        // Add labels
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.fillText(
+          `${predictions[0].priceChangePercent}%`,
+          20,
+          canvas.height - 5
+        );
+        ctx.fillText(
+          `${predictions[predictions.length - 1].priceChangePercent}%`,
+          canvas.width - 40,
+          canvas.height - 5
+        );
+      }
     </script>
   </body>
 </html>
