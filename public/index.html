@@ -427,7 +427,7 @@
       }
 
       /* Add to existing styles */
-      .ai-panel {
+      .ai-prediction-panel {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         margin: 1rem;
@@ -436,11 +436,69 @@
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       }
 
-      .prediction-chart {
+      .ai-header h3 {
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .prediction-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+      }
+
+      .tab-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .tab-btn.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #667eea;
+      }
+
+      .prediction-charts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-container {
         background: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         padding: 1rem;
-        margin: 1rem 0;
+        backdrop-filter: blur(10px);
+      }
+
+      .chart-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+      }
+
+      .mini-chart {
+        height: 100px;
+        position: relative;
+      }
+
+      .risk-assessment {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
       }
 
       .risk-meter {
@@ -464,25 +522,170 @@
         background: white;
         border-radius: 50%;
         border: 3px solid #667eea;
+        transition: left 0.5s ease;
       }
 
       .recommendation-box {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         color: #1e293b;
         border-radius: 8px;
         padding: 1rem;
-        margin-top: 1rem;
+        margin-bottom: 1rem;
       }
 
-      .ai-btn {
+      .recommendation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .recommendation-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+
+      .badge-strong-buy {
         background: #10b981;
+        color: white;
+      }
+      .badge-buy {
+        background: #22c55e;
+        color: white;
+      }
+      .badge-hold {
+        background: #f59e0b;
+        color: white;
+      }
+      .badge-sell {
+        background: #ef4444;
+        color: white;
+      }
+      .badge-strong-sell {
+        background: #dc2626;
+        color: white;
+      }
+
+      .confidence-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+      }
+
+      .confidence-bar {
+        width: 60px;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        background: #10b981;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+      }
+
+      .prediction-factors {
+        font-size: 0.85rem;
+      }
+
+      .factor-list {
+        margin-top: 0.5rem;
+      }
+
+      .factor-item {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .factor-item:last-child {
+        border-bottom: none;
+      }
+
+      .prediction-summary {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+
+      .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .summary-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+      }
+
+      .summary-value {
+        font-weight: bold;
+        font-size: 1rem;
+      }
+
+      .loading-prediction {
+        text-align: center;
+        padding: 2rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .ai-predict-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
         border-radius: 25px;
         cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         width: 100%;
-        margin-top: 1rem;
+      }
+
+      .ai-predict-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      }
+
+      .ai-predict-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
       }
     </style>
   </head>
@@ -587,40 +790,114 @@
             </div>
           </div>
 
-          <!-- Add this after the zone-details div -->
-          <div class="ai-panel" id="aiPanel">
-            <h3>🤖 AI Predictions</h3>
+          <div class="ai-prediction-panel" id="aiPredictionPanel">
+            <div class="ai-header">
+              <h3>🤖 AI Market Predictions</h3>
+            </div>
 
-            <div id="predictionResults" style="display: none">
-              <div class="prediction-chart">
-                <h4>5-Year Price Forecast</h4>
-                <canvas id="simpleChart" width="300" height="100"></canvas>
-              </div>
+            <div class="prediction-tabs">
+              <button class="tab-btn active" data-period="1">1 Year</button>
+              <button class="tab-btn" data-period="3">3 Years</button>
+              <button class="tab-btn" data-period="5">5 Years</button>
+            </div>
 
-              <div class="risk-meter">
-                <div class="risk-indicator" id="riskIndicator"></div>
-              </div>
+            <div id="predictionContent">
               <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  font-size: 0.8rem;
-                "
+                class="loading-prediction"
+                id="loadingPrediction"
+                style="display: none"
               >
-                <span>Low Risk</span>
-                <span>High Risk</span>
+                <div class="spinner"></div>
+                <p>Analyzing market data with AI...</p>
               </div>
 
-              <div class="recommendation-box">
-                <strong id="recommendationText">HOLD</strong>
-                <div id="reasoningText">Analyzing market conditions...</div>
-                <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem">
-                  Confidence: <span id="confidenceText">75%</span>
+              <div id="predictionResults" style="display: none">
+                <div class="prediction-charts">
+                  <div class="chart-container">
+                    <div class="chart-title">Price Growth Forecast</div>
+                    <div class="mini-chart">
+                      <canvas id="priceChart" width="280" height="100"></canvas>
+                    </div>
+                  </div>
+                  <div class="chart-container">
+                    <div class="chart-title">Rental Yield Forecast</div>
+                    <div class="mini-chart">
+                      <canvas id="yieldChart" width="280" height="100"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="risk-assessment">
+                  <h4>Risk Assessment</h4>
+                  <div class="risk-meter">
+                    <div class="risk-indicator" id="riskIndicator"></div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      font-size: 0.8rem;
+                      margin-top: 0.5rem;
+                    "
+                  >
+                    <span>Low Risk</span>
+                    <span>High Risk</span>
+                  </div>
+                </div>
+
+                <div class="recommendation-box">
+                  <div class="recommendation-header">
+                    <span id="recommendationText">Analyzing...</span>
+                    <span class="recommendation-badge" id="recommendationBadge"
+                      >HOLD</span
+                    >
+                  </div>
+                  <div class="confidence-indicator">
+                    <span>Confidence:</span>
+                    <div class="confidence-bar">
+                      <div class="confidence-fill" id="confidenceFill"></div>
+                    </div>
+                    <span id="confidenceText">75%</span>
+                  </div>
+                  <div class="prediction-factors">
+                    <strong>Key Factors:</strong>
+                    <div class="factor-list" id="factorList">
+                      <!-- Factors will be populated here -->
+                    </div>
+                  </div>
+                </div>
+
+                <div class="prediction-summary">
+                  <h4>5-Year Summary</h4>
+                  <div class="summary-grid">
+                    <div class="summary-item">
+                      <span class="summary-label">Avg. Annual Growth</span>
+                      <span class="summary-value" id="avgGrowth">3.8%</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Final Predicted Price</span>
+                      <span class="summary-value" id="finalPrice"
+                        >£505,286</span
+                      >
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Final Yield</span>
+                      <span class="summary-value" id="finalYield">5.4%</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Risk Level</span>
+                      <span class="summary-value" id="riskLevel">Medium</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <button class="ai-btn" onclick="generatePredictions()">
+            <button
+              class="ai-predict-btn"
+              id="generatePredictionBtn"
+              onclick="generateAIPredictions()"
+            >
               🚀 Generate AI Predictions
             </button>
           </div>
@@ -1557,105 +1834,244 @@
         });
       });
 
-      // Add to existing JavaScript
-      async function generatePredictions() {
+      // Enhanced JavaScript for AI predictions
+      let currentPredictions = null;
+      let selectedPeriod = 5;
+
+      // Generate AI predictions
+      async function generateAIPredictions() {
         if (!selectedPostcode) {
           alert("Please select a property area first");
           return;
         }
 
-        const btn = document.querySelector(".ai-btn");
+        const btn = document.getElementById("generatePredictionBtn");
         btn.disabled = true;
-        btn.textContent = "🤖 Analyzing...";
+        btn.innerHTML = "🤖 Generating Predictions...";
+
+        document.getElementById("loadingPrediction").style.display = "block";
+        document.getElementById("predictionResults").style.display = "none";
 
         try {
+          console.log("🚀 Generating AI predictions for:", selectedPostcode);
+
           const response = await fetch(
             `${API_BASE}/api/ai-predictions?postcode=${selectedPostcode}`
           );
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
           const data = await response.json();
+          console.log("✅ AI Response:", data);
 
           if (data.success) {
+            currentPredictions = data;
             displayPredictions(data);
+
+            document.getElementById("loadingPrediction").style.display = "none";
             document.getElementById("predictionResults").style.display =
               "block";
           } else {
-            throw new Error(data.error || "Prediction failed");
+            throw new Error(data.error || "Failed to generate predictions");
           }
         } catch (error) {
-          console.error("Prediction error:", error);
-          alert("Failed to generate predictions. Please try again.");
+          console.error("❌ Prediction error:", error);
+          alert("Failed to generate predictions: " + error.message);
+
+          document.getElementById("loadingPrediction").style.display = "none";
         } finally {
           btn.disabled = false;
-          btn.textContent = "🚀 Generate AI Predictions";
+          btn.innerHTML = "🚀 Generate AI Predictions";
         }
       }
 
       function displayPredictions(data) {
+        const predictions = data.predictions || [];
+        const recommendation = data.recommendation || {};
+        const riskScore = data.riskScore || 5;
+
+        console.log("📊 Displaying predictions:", predictions);
+
+        // Update charts
+        updateCharts(predictions);
+
         // Update risk meter
-        const riskIndicator = document.getElementById("riskIndicator");
-        const riskPosition = ((data.riskScore - 1) / 9) * 100;
-        riskIndicator.style.left = `calc(${riskPosition}% - 15px)`;
+        updateRiskMeter(riskScore);
 
         // Update recommendation
-        document.getElementById("recommendationText").textContent =
-          data.recommendation.recommendation;
-        document.getElementById("reasoningText").textContent =
-          data.recommendation.reasoning.join(", ");
-        document.getElementById("confidenceText").textContent =
-          data.recommendation.confidence + "%";
+        updateRecommendation(recommendation);
 
-        // Draw simple chart
-        drawSimpleChart(data.predictions);
+        // Update summary
+        updateSummary(predictions);
       }
 
-      function drawSimpleChart(predictions) {
-        const canvas = document.getElementById("simpleChart");
-        const ctx = canvas.getContext("2d");
+      function updateCharts(predictions) {
+        // Draw price chart
+        const priceCanvas = document.getElementById("priceChart");
+        const priceCtx = priceCanvas.getContext("2d");
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#10b981";
+        // Draw yield chart
+        const yieldCanvas = document.getElementById("yieldChart");
+        const yieldCtx = yieldCanvas.getContext("2d");
+
+        // Clear canvases
+        priceCtx.clearRect(0, 0, priceCanvas.width, priceCanvas.height);
+        yieldCtx.clearRect(0, 0, yieldCanvas.width, yieldCanvas.height);
+
+        // Get data for selected period
+        const displayPredictions = predictions.slice(0, selectedPeriod);
+        const priceData = displayPredictions.map((p) => p.priceChangePercent);
+        const yieldData = displayPredictions.map((p) => p.predictedYield);
+
+        // Draw price chart
+        drawChart(priceCtx, priceData, "#10b981", "Price Growth %");
+
+        // Draw yield chart
+        drawChart(yieldCtx, yieldData, "#3b82f6", "Rental Yield %");
+      }
+
+      function drawChart(ctx, data, color, label) {
+        if (data.length === 0) return;
+
+        const canvas = ctx.canvas;
+        const padding = 20;
+        const chartWidth = canvas.width - padding * 2;
+        const chartHeight = canvas.height - padding * 2;
+
+        // Find min/max for scaling
+        const maxValue = Math.max(...data);
+        const minValue = Math.min(...data);
+        const range = maxValue - minValue || 1;
+
+        // Draw line
+        ctx.strokeStyle = color;
         ctx.lineWidth = 3;
-
-        const maxGrowth = Math.max(
-          ...predictions.map((p) => p.priceChangePercent)
-        );
-        const minGrowth = Math.min(
-          ...predictions.map((p) => p.priceChangePercent)
-        );
-        const range = maxGrowth - minGrowth || 1;
-
         ctx.beginPath();
-        predictions.forEach((pred, i) => {
-          const x = (i / (predictions.length - 1)) * (canvas.width - 40) + 20;
+
+        data.forEach((value, index) => {
+          const x = padding + (index / (data.length - 1)) * chartWidth;
           const y =
-            canvas.height -
-            20 -
-            ((pred.priceChangePercent - minGrowth) / range) *
-              (canvas.height - 40);
+            padding + chartHeight - ((value - minValue) / range) * chartHeight;
 
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
 
-          // Draw points
-          ctx.fillStyle = "#10b981";
+          // Draw point
+          ctx.fillStyle = color;
           ctx.fillRect(x - 2, y - 2, 4, 4);
         });
+
         ctx.stroke();
 
         // Add labels
         ctx.fillStyle = "white";
         ctx.font = "12px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText(`${data[0].toFixed(1)}`, padding, canvas.height - 5);
+        ctx.textAlign = "right";
         ctx.fillText(
-          `${predictions[0].priceChangePercent}%`,
-          20,
-          canvas.height - 5
-        );
-        ctx.fillText(
-          `${predictions[predictions.length - 1].priceChangePercent}%`,
-          canvas.width - 40,
+          `${data[data.length - 1].toFixed(1)}`,
+          canvas.width - padding,
           canvas.height - 5
         );
       }
+
+      function updateRiskMeter(riskScore) {
+        const indicator = document.getElementById("riskIndicator");
+        const position = ((riskScore - 1) / 9) * 100; // Convert 1-10 scale to 0-100%
+        indicator.style.left = `calc(${position}% - 15px)`;
+      }
+
+      function updateRecommendation(recommendation) {
+        const recommendationText =
+          document.getElementById("recommendationText");
+        const recommendationBadge = document.getElementById(
+          "recommendationBadge"
+        );
+        const confidenceFill = document.getElementById("confidenceFill");
+        const confidenceText = document.getElementById("confidenceText");
+        const factorList = document.getElementById("factorList");
+
+        // Update recommendation
+        recommendationText.textContent = "AI Recommendation:";
+        recommendationBadge.textContent =
+          recommendation.recommendation || "HOLD";
+        recommendationBadge.className = `recommendation-badge badge-${(
+          recommendation.recommendation || "HOLD"
+        )
+          .toLowerCase()
+          .replace(" ", "-")}`;
+
+        // Update confidence
+        const confidence = recommendation.confidence || 75;
+        confidenceFill.style.width = `${confidence}%`;
+        confidenceText.textContent = `${confidence}%`;
+
+        // Update factors
+        factorList.innerHTML = "";
+        if (recommendation.reasoning) {
+          recommendation.reasoning.forEach((factor) => {
+            const factorItem = document.createElement("div");
+            factorItem.className = "factor-item";
+            factorItem.textContent = `• ${factor}`;
+            factorList.appendChild(factorItem);
+          });
+        }
+      }
+
+      function updateSummary(predictions) {
+        if (predictions.length === 0) return;
+
+        // Calculate average growth
+        const avgGrowth =
+          predictions.reduce((sum, p) => sum + p.priceChangePercent, 0) /
+          predictions.length;
+        document.getElementById("avgGrowth").textContent = `${avgGrowth.toFixed(
+          1
+        )}%`;
+
+        // Final price
+        const finalPrice = predictions[predictions.length - 1].predictedPrice;
+        document.getElementById(
+          "finalPrice"
+        ).textContent = `£${finalPrice.toLocaleString()}`;
+
+        // Final yield
+        const finalYield = predictions[predictions.length - 1].predictedYield;
+        document.getElementById(
+          "finalYield"
+        ).textContent = `${finalYield.toFixed(1)}%`;
+
+        // Risk level
+        const riskScore = currentPredictions.riskScore || 5;
+        let riskLevel = "Medium";
+        if (riskScore <= 3) riskLevel = "Low";
+        else if (riskScore >= 7) riskLevel = "High";
+        document.getElementById("riskLevel").textContent = riskLevel;
+      }
+
+      // Setup prediction tabs
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document
+              .querySelectorAll(".tab-btn")
+              .forEach((b) => b.classList.remove("active"));
+            this.classList.add("active");
+            selectedPeriod = parseInt(this.dataset.period);
+
+            if (currentPredictions) {
+              updateCharts(currentPredictions.predictions);
+              updateSummary(currentPredictions.predictions);
+            }
+          });
+        });
+      });
     </script>
   </body>
 </html>
