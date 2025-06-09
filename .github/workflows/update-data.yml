@@ -1,0 +1,69 @@
+# .github/workflows/update-data.yml
+name: Update Property Data
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (7 AM BST/6 AM GMT)
+    - cron: "0 6 * * *"
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+  # Run on push to main (for testing)
+  push:
+    branches: [main]
+    paths:
+      - "api/update-data.js"
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Data Update
+        run: |
+          echo "🚀 Triggering data update via API..."
+          curl -X POST "${{ secrets.VERCEL_URL }}/api/update-data" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.UPDATE_API_KEY }}" \
+            --fail \
+            --show-error
+          echo "✅ Data update completed"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Data update failed. Check logs for details."
+
+  # Weekly comprehensive update
+  weekly-update:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 6 * * 0' # Sundays
+
+    steps:
+      - name: Comprehensive Data Update
+        run: |
+          echo "🔄 Starting weekly comprehensive update..."
+          curl -X POST "${{ secrets.VERCEL_URL }}/api/update-data?comprehensive=true" \
+            -H "Content-Type: application/json" \
+            --fail \
+            --show-error
+          echo "✅ Weekly update completed"
+
+  # Monitor API health
+  api-health-check:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 */6 * * *' # Every 6 hours
+
+    steps:
+      - name: Check API Endpoints
+        run: |
+          # Test your app's API
+          curl -f "${{ secrets.VERCEL_URL }}/api/property-data" || echo "Property API issue"
+
+          # Test external APIs
+          curl -f "https://landregistry.data.gov.uk/app/ppd" || echo "Land Registry API issue"
+          curl -f "https://data.police.uk/api/forces" || echo "Police API issue"
+          curl -f "https://api.ons.gov.uk" || echo "ONS API issue"
+
+          echo "✅ API health check completed"
