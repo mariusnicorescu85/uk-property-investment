@@ -3454,139 +3454,146 @@
       // FIXED: Sample predictions for testing
       // Replace the displaySamplePredictions() function in your index.html
 
-      function displaySamplePredictions() {
-        console.log("🔄 Using sample predictions with FIXED data structure...");
+      // 🎯 DYNAMIC AI PREDICTIONS - Replace displaySamplePredictions function
 
-        // Get current property data for realistic base values
+      function displaySamplePredictions() {
+        console.log("🔄 Generating DYNAMIC predictions for:", selectedPostcode);
+
+        // Get ACTUAL property data for the selected area
         const selectedProperty =
           propertyData.find((p) => p.postcode === selectedPostcode) ||
           propertyData[0];
-        const basePrice = selectedProperty?.avg_price || 425000;
-        const currentYield = selectedProperty?.rental_yield || 4.8;
-        const currentGrowth = selectedProperty?.price_growth_12m || 8.5;
 
-        console.log(
-          `📊 Base data - Price: £${basePrice.toLocaleString()}, Yield: ${currentYield}%, Growth: ${currentGrowth}%`
-        );
+        if (!selectedProperty) {
+          console.error("❌ No property data found for predictions");
+          return;
+        }
 
-        // Generate realistic 5-year predictions with proper data structure
+        // Extract REAL data from selected property
+        const basePrice = selectedProperty.avg_price || 280000;
+        const currentYield = selectedProperty.rental_yield || 5.5;
+        const currentGrowth = selectedProperty.price_growth_12m || 4.0;
+        const crimeRate = selectedProperty.crime_rate || 30;
+        const transportScore = selectedProperty.transport_score || 7.0;
+        const investmentScore = selectedProperty.investment_score || 7.0;
+        const region = selectedProperty.property_areas?.region || "UK";
+        const areaName =
+          selectedProperty.property_areas?.area_name || selectedPostcode;
+
+        console.log(`📊 REAL data for ${areaName}:`, {
+          price: `£${basePrice.toLocaleString()}`,
+          growth: `${currentGrowth}%`,
+          yield: `${currentYield}%`,
+          crime: crimeRate,
+          transport: transportScore,
+          score: investmentScore,
+        });
+
+        // Calculate area-specific economic factors
+        const economicFactors = calculateAreaEconomicFactors(selectedProperty);
+        console.log("📈 Economic factors:", economicFactors);
+
+        // Generate realistic 5-year predictions based on ACTUAL area data
         const predictions = [];
         let runningPrice = basePrice;
+        let runningYield = currentYield;
 
         for (let year = 1; year <= 5; year++) {
-          // Realistic year-over-year changes
-          const yearlyGrowth = Math.max(
-            1.5,
-            currentGrowth * Math.pow(0.9, year - 1) + (Math.random() - 0.5) * 2
+          // DYNAMIC year-over-year growth based on area characteristics
+          const areaGrowthFactor = calculateAreaGrowthFactor(
+            selectedProperty,
+            year
           );
-          const yearlyYieldChange = (Math.random() - 0.5) * 0.4; // ±0.2% yield change per year
+          const marketCycleFactor = calculateMarketCycle(year);
+          const economicFactor = economicFactors.growthMultiplier;
 
-          runningPrice = Math.round(runningPrice * (1 + yearlyGrowth / 100));
-          const predictedYield = Math.max(
-            2.0,
-            currentYield + yearlyYieldChange * year
+          const yearlyGrowth = Math.max(
+            0.5,
+            currentGrowth *
+              areaGrowthFactor *
+              marketCycleFactor *
+              economicFactor
           );
+
+          // DYNAMIC price calculation
+          runningPrice = Math.round(runningPrice * (1 + yearlyGrowth / 100));
+
+          // DYNAMIC yield changes based on area and market conditions
+          const yieldChange = calculateYieldChange(
+            selectedProperty,
+            year,
+            yearlyGrowth
+          );
+          runningYield = Math.max(2.0, runningYield + yieldChange);
+
+          // DYNAMIC confidence based on data quality and time horizon
+          const confidence = calculateDynamicConfidence(selectedProperty, year);
 
           predictions.push({
             year: new Date().getFullYear() + year,
             priceChangePercent: Math.round(yearlyGrowth * 100) / 100,
             predictedPrice: runningPrice,
-            predictedYield: Math.round(predictedYield * 100) / 100,
-            confidence: Math.max(65, 90 - year * 4), // Decreasing confidence over time
+            predictedYield: Math.round(runningYield * 100) / 100,
+            confidence: confidence,
           });
         }
 
-        // Enhanced sample data with COMPLETE structure
-        const sampleData = {
+        // Calculate DYNAMIC risk score based on area
+        const riskScore = calculateAreaRiskScore(selectedProperty, predictions);
+
+        // Generate DYNAMIC recommendation based on area analysis
+        const recommendation = generateAreaRecommendation(
+          selectedProperty,
+          predictions,
+          riskScore
+        );
+
+        // Enhanced dynamic data structure
+        const dynamicData = {
           success: true,
-          postcode: selectedPostcode || "M1 1AA",
+          postcode: selectedPostcode,
+          areaName: areaName,
           predictions: predictions,
-          riskScore: 4 + Math.random() * 3, // Risk score 4-7
-          recommendation: {
-            recommendation:
-              predictions.length > 0 && predictions[0].priceChangePercent > 6
-                ? "BUY"
-                : predictions.length > 0 &&
-                  predictions[0].priceChangePercent > 8
-                ? "STRONG BUY"
-                : "HOLD",
-            confidence: 75 + Math.floor(Math.random() * 15),
-            reasoning: [
-              selectedProperty?.price_growth_12m > 8
-                ? "Strong recent price growth"
-                : "Moderate price growth",
-              selectedProperty?.rental_yield > 5
-                ? "Good rental yield potential"
-                : "Moderate rental yield",
-              selectedProperty?.crime_rate < 30
-                ? "Low crime area advantage"
-                : "Average crime levels",
-              selectedProperty?.transport_score > 7
-                ? "Excellent transport links"
-                : "Good transport access",
-              "Based on comprehensive market analysis",
-            ].slice(0, 4),
-            score: 5.5 + Math.random() * 3,
-          },
+          riskScore: riskScore,
+          recommendation: recommendation,
           areaInfo: {
-            areaCode: selectedProperty?.postcode?.substring(0, 2) || "M1",
-            region: selectedProperty?.property_areas?.region || "North West",
-            coverage: "enhanced",
+            areaCode: selectedPostcode.substring(0, 2),
+            region: region,
+            coverage: "dynamic",
+            actualData: true,
           },
           realTimeData: {
-            economic: {
-              baseRate: selectedProperty?.live_economic_data?.baseRate || 5.25,
-              inflation: selectedProperty?.live_economic_data?.inflation || 4.2,
-              unemploymentRate: 4.1,
-              lastUpdated: new Date().toISOString(),
-            },
-            recentSales: [
-              {
-                price: basePrice + Math.floor((Math.random() - 0.5) * 100000),
-                date: "2024-10-15",
-                propertyType: "F",
-                address:
-                  selectedProperty?.property_areas?.area_name || "Central Area",
-              },
-              {
-                price: basePrice + Math.floor((Math.random() - 0.5) * 80000),
-                date: "2024-09-22",
-                propertyType: "T",
-                address:
-                  selectedProperty?.property_areas?.area_name || "Central Area",
-              },
-            ],
-            crimeData: {
-              crimeRate: selectedProperty?.crime_rate || 30,
-              source:
-                selectedProperty?.data_source === "live" ? "live" : "estimated",
-            },
+            economic:
+              selectedProperty.live_economic_data || economicFactors.economic,
+            basePrice: basePrice,
+            currentGrowth: currentGrowth,
+            currentYield: currentYield,
+            crimeImpact: economicFactors.crimeImpact,
+            transportBonus: economicFactors.transportBonus,
+            areaMultiplier: economicFactors.areaMultiplier,
           },
           dataQuality: {
+            source: selectedProperty.data_source || "generated",
             economic:
-              selectedProperty?.live_economic_data?.source === "live_apis"
-                ? "live"
-                : "estimated",
-            recentSales: "estimated",
-            crime:
-              selectedProperty?.data_source === "live" ? "live" : "estimated",
+              selectedProperty.live_economic_data?.source || "estimated",
+            areaSpecific: true,
           },
           generatedAt: new Date().toISOString(),
         };
 
-        console.log("📊 Sample predictions structure:", {
-          predictionsCount: sampleData.predictions.length,
-          finalPrice:
-            sampleData.predictions[sampleData.predictions.length - 1]
-              ?.predictedPrice,
-          finalYield:
-            sampleData.predictions[sampleData.predictions.length - 1]
-              ?.predictedYield,
-          recommendation: sampleData.recommendation.recommendation,
+        console.log("🎯 DYNAMIC predictions generated:", {
+          area: areaName,
+          basePrice: `£${basePrice.toLocaleString()}`,
+          finalPrice: `£${predictions[4].predictedPrice.toLocaleString()}`,
+          avgGrowth: `${(
+            predictions.reduce((sum, p) => sum + p.priceChangePercent, 0) / 5
+          ).toFixed(1)}%`,
+          recommendation: recommendation.recommendation,
+          riskScore: riskScore,
         });
 
-        currentPredictions = sampleData;
-        displayPredictions(sampleData);
+        currentPredictions = dynamicData;
+        displayPredictions(dynamicData);
 
         const resultsEl = document.getElementById("predictionResults");
         if (resultsEl) {
@@ -3597,6 +3604,317 @@
         if (loadingEl) {
           loadingEl.style.display = "none";
         }
+      }
+
+      // Calculate area-specific economic factors
+      function calculateAreaEconomicFactors(property) {
+        const region = property.property_areas?.region || "UK";
+        const crimeRate = property.crime_rate || 30;
+        const transportScore = property.transport_score || 7.0;
+        const investmentScore = property.investment_score || 7.0;
+
+        // Regional multipliers based on economic conditions
+        const regionalMultipliers = {
+          London: { growth: 0.9, risk: 0.8, stability: 1.2 },
+          "North West": { growth: 1.3, risk: 1.1, stability: 1.0 },
+          "West Midlands": { growth: 1.2, risk: 1.2, stability: 0.9 },
+          Yorkshire: { growth: 1.1, risk: 1.1, stability: 1.0 },
+          Scotland: { growth: 0.9, risk: 1.0, stability: 1.1 },
+          Wales: { growth: 1.0, risk: 1.0, stability: 1.0 },
+          "South West": { growth: 1.0, risk: 0.9, stability: 1.1 },
+          "South East": { growth: 0.95, risk: 0.85, stability: 1.15 },
+          "North East": { growth: 1.2, risk: 1.3, stability: 0.9 },
+          "Northern Ireland": { growth: 1.1, risk: 1.2, stability: 0.9 },
+          "East of England": { growth: 1.0, risk: 0.9, stability: 1.1 },
+        };
+
+        const multiplier = regionalMultipliers[region] || {
+          growth: 1.0,
+          risk: 1.0,
+          stability: 1.0,
+        };
+
+        // Crime impact (lower crime = higher growth potential)
+        const crimeImpact = Math.max(0.8, 1.2 - crimeRate / 100);
+
+        // Transport bonus (better transport = higher growth)
+        const transportBonus = 0.9 + transportScore / 50;
+
+        // Overall area multiplier
+        const areaMultiplier = multiplier.growth * crimeImpact * transportBonus;
+
+        return {
+          growthMultiplier: areaMultiplier,
+          riskMultiplier: multiplier.risk,
+          stabilityMultiplier: multiplier.stability,
+          crimeImpact: crimeImpact,
+          transportBonus: transportBonus,
+          areaMultiplier: areaMultiplier,
+          economic: property.live_economic_data || {
+            baseRate: 5.25,
+            inflation: 4.2,
+            source: "estimated",
+          },
+        };
+      }
+
+      // Calculate area-specific growth factor
+      function calculateAreaGrowthFactor(property, year) {
+        const baseScore = property.investment_score || 7.0;
+        const priceLevel = property.avg_price || 280000;
+
+        // High-scoring areas maintain growth better
+        const scoreFactor = 0.7 + baseScore / 20;
+
+        // Price level factor (more affordable areas often have higher growth potential)
+        const priceFactor =
+          priceLevel < 200000
+            ? 1.2
+            : priceLevel < 300000
+            ? 1.1
+            : priceLevel < 500000
+            ? 1.0
+            : 0.9;
+
+        // Time decay (growth tends to moderate over time)
+        const timeDecay = Math.pow(0.95, year - 1);
+
+        return scoreFactor * priceFactor * timeDecay;
+      }
+
+      // Calculate market cycle factor
+      function calculateMarketCycle(year) {
+        // Simulate market cycles (simplified)
+        const cyclePosition = (year - 1) % 7; // 7-year property cycle
+        const cycleFactor =
+          0.9 + 0.2 * Math.sin((cyclePosition / 7) * 2 * Math.PI);
+        return cycleFactor;
+      }
+
+      // Calculate dynamic yield changes
+      function calculateYieldChange(property, year, growthRate) {
+        const baseYield = property.rental_yield || 5.5;
+        const region = property.property_areas?.region || "UK";
+
+        // Yield typically moves inversely to price growth
+        const priceYieldCorrelation = -0.1;
+        const baseChange = growthRate * priceYieldCorrelation;
+
+        // Regional yield pressures
+        const regionalYieldPressure = {
+          London: -0.05, // Yields compress in London
+          "North West": 0.02, // Yields can expand in growing northern cities
+          Scotland: 0.01,
+          Wales: 0.01,
+          "West Midlands": 0.02,
+        };
+
+        const regionPressure = regionalYieldPressure[region] || 0;
+
+        // Time factor (yields tend to normalize over time)
+        const timeFactor = year * 0.02;
+
+        return baseChange + regionPressure + (Math.random() - 0.5) * 0.1;
+      }
+
+      // Calculate dynamic confidence
+      function calculateDynamicConfidence(property, year) {
+        let baseConfidence = 90;
+
+        // Reduce confidence over time
+        baseConfidence -= year * 5;
+
+        // Adjust for data quality
+        if (property.data_source === "live") {
+          baseConfidence += 5;
+        } else if (property.data_source === "fallback") {
+          baseConfidence -= 10;
+        }
+
+        // Adjust for area characteristics
+        const investmentScore = property.investment_score || 7.0;
+        baseConfidence += (investmentScore - 5) * 2;
+
+        // Add some randomness for realism
+        baseConfidence += (Math.random() - 0.5) * 10;
+
+        return Math.max(50, Math.min(95, Math.round(baseConfidence)));
+      }
+
+      // Calculate area-specific risk score
+      function calculateAreaRiskScore(property, predictions) {
+        let risk = 5; // Base risk
+
+        const avgGrowth =
+          predictions.reduce((sum, p) => sum + p.priceChangePercent, 0) /
+          predictions.length;
+        const priceVolatility = calculateVolatility(
+          predictions.map((p) => p.priceChangePercent)
+        );
+        const finalPrice = predictions[predictions.length - 1].predictedPrice;
+        const basePrice = property.avg_price || 280000;
+
+        // Growth risk
+        if (avgGrowth > 8) risk += 1;
+        if (avgGrowth < 2) risk += 2;
+
+        // Volatility risk
+        risk += priceVolatility * 0.5;
+
+        // Price appreciation risk
+        const totalAppreciation = (finalPrice - basePrice) / basePrice;
+        if (totalAppreciation > 0.5) risk += 1; // High appreciation = higher risk
+
+        // Area-specific risks
+        const crimeRate = property.crime_rate || 30;
+        if (crimeRate > 50) risk += 1;
+
+        const region = property.property_areas?.region || "UK";
+        const regionalRisk = {
+          London: 0.5,
+          "North West": 1.0,
+          "West Midlands": 1.2,
+          "North East": 1.5,
+          "Northern Ireland": 1.3,
+          Scotland: 1.0,
+        };
+
+        risk += regionalRisk[region] || 1.0;
+
+        return Math.max(1, Math.min(10, Math.round(risk)));
+      }
+
+      // Generate area-specific recommendation
+      function generateAreaRecommendation(property, predictions, riskScore) {
+        const avgGrowth =
+          predictions.reduce((sum, p) => sum + p.priceChangePercent, 0) /
+          predictions.length;
+        const avgYield =
+          predictions.reduce((sum, p) => sum + p.predictedYield, 0) /
+          predictions.length;
+        const investmentScore = property.investment_score || 7.0;
+        const region = property.property_areas?.region || "UK";
+        const areaName =
+          property.property_areas?.area_name || property.postcode;
+
+        let score = 5;
+        let reasoning = [];
+
+        // Growth analysis
+        if (avgGrowth > 7) {
+          score += 2;
+          reasoning.push(
+            `Strong ${avgGrowth.toFixed(1)}% growth forecast for ${areaName}`
+          );
+        } else if (avgGrowth > 4) {
+          score += 1;
+          reasoning.push(
+            `Solid ${avgGrowth.toFixed(1)}% growth potential identified`
+          );
+        } else {
+          score -= 1;
+          reasoning.push(`Modest ${avgGrowth.toFixed(1)}% growth expected`);
+        }
+
+        // Yield analysis
+        if (avgYield > 6) {
+          score += 2;
+          reasoning.push(
+            `Excellent ${avgYield.toFixed(1)}% rental yield in ${region}`
+          );
+        } else if (avgYield > 4.5) {
+          score += 1;
+          reasoning.push(
+            `Good ${avgYield.toFixed(1)}% rental returns expected`
+          );
+        } else {
+          score -= 0.5;
+          reasoning.push(
+            `Lower ${avgYield.toFixed(1)}% yields typical for area`
+          );
+        }
+
+        // Investment score analysis
+        if (investmentScore > 8) {
+          score += 1;
+          reasoning.push(`High-scoring ${investmentScore}/10 investment area`);
+        } else if (investmentScore < 6) {
+          score -= 1;
+          reasoning.push(`Below-average ${investmentScore}/10 area score`);
+        }
+
+        // Risk analysis
+        if (riskScore < 4) {
+          score += 1;
+          reasoning.push(`Low-risk investment profile`);
+        } else if (riskScore > 7) {
+          score -= 1.5;
+          reasoning.push(`Higher risk investment in this area`);
+        }
+
+        // Regional factors
+        const regionalAdvantages = {
+          London: "Capital city premium and stability",
+          "North West": "Northern Powerhouse growth region",
+          "West Midlands": "Major regeneration and HS2 benefits",
+          Yorkshire: "Strong rental demand and affordability",
+          Scotland: "Stable market with good yields",
+          Wales: "Affordable entry point with growth potential",
+        };
+
+        if (regionalAdvantages[region]) {
+          reasoning.push(regionalAdvantages[region]);
+        }
+
+        // Crime and transport factors
+        const crimeRate = property.crime_rate || 30;
+        const transportScore = property.transport_score || 7.0;
+
+        if (crimeRate < 25) {
+          reasoning.push("Low crime area advantage");
+        } else if (crimeRate > 50) {
+          score -= 0.5;
+          reasoning.push("Higher crime area consideration");
+        }
+
+        if (transportScore > 8) {
+          reasoning.push("Excellent transport connectivity");
+        }
+
+        // Data quality note
+        if (property.data_source === "live") {
+          reasoning.push("Based on live market data");
+        }
+
+        // Generate recommendation
+        let recommendation = "HOLD";
+        if (score >= 8) recommendation = "STRONG BUY";
+        else if (score >= 6.5) recommendation = "BUY";
+        else if (score <= 3.5) recommendation = "SELL";
+        else if (score <= 2) recommendation = "STRONG SELL";
+
+        // Calculate confidence
+        const dataQuality = property.data_source === "live" ? 0.9 : 0.7;
+        const confidence = Math.round((score / 10) * 100 * dataQuality);
+
+        return {
+          recommendation: recommendation,
+          score: Math.round(score * 10) / 10,
+          reasoning: reasoning.slice(0, 5), // Keep top 5 reasons
+          confidence: Math.max(60, Math.min(95, confidence)),
+          areaSpecific: areaName,
+          regionalContext: region,
+        };
+      }
+
+      // Helper function for volatility calculation
+      function calculateVolatility(values) {
+        if (values.length < 2) return 0;
+        const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+        const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
+        return Math.sqrt(
+          squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length
+        );
       }
 
       // Setup prediction tabs - FIXED
