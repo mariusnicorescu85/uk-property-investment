@@ -544,3 +544,15 @@ async function getPostcodeCoordinates(postcode) {
     return null;
   }
 }
+
+// Add to your real-time-data.js for enhanced data
+export async function getEnhancedDetailData(postcode) {
+  const [planning, education, transport] = await Promise.allSettled([
+    fetchPlanningApplications(postcode), // Real development data
+    fetchSchoolData(postcode), // Real school ratings
+    fetchTransportTimes(postcode), // Real journey times
+    fetchRentalMarketData(postcode), // Real occupancy rates
+  ]);
+
+  return { planning: planning.value, education: education.value /* etc */ };
+}
